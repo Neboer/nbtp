@@ -56,7 +56,7 @@ void write_headers_to_file(char* filename, struct file_block_info file_info, FIL
     cJSON_AddItemToObject(headers_json,"file_length",cJSON_CreateNumber(file_info.file_size));
     cJSON_AddItemToObject(headers_json,"blocks_count",cJSON_CreateNumber(file_info.total_block_count));
     cJSON_AddItemToObject(headers_json,"last_block_size",cJSON_CreateNumber(file_info.final_block_size));
-    fputs(cJSON_Print(headers_json),file);
+    fputs(cJSON_PrintUnformatted(headers_json),file);
     fflush(file);
 }
 
@@ -76,6 +76,7 @@ int main(int argc, char** argv){
         for (int current_block = 1; current_block <= file_info.total_block_count - 1; ++current_block) {
             struct binary_data looping_png_data = get_next_good_png_block(upload_file);
             char* url = upload_png_to_server(looping_png_data);
+            free(looping_png_data.content);
             fputs(url,record_file);
             fputc('\n',record_file);
         }
@@ -83,5 +84,7 @@ int main(int argc, char** argv){
         char* url = upload_png_to_server(last_png_data);
         fputs(url,record_file);
         fputc('\n',record_file);
+        fclose(record_file);
+        fclose(upload_file);
     }
 }
